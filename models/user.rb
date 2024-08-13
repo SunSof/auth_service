@@ -1,9 +1,11 @@
 require "active_record"
 require "bcrypt"
+require "securerandom"
 
 class User < ActiveRecord::Base
-  has_secure_password
-  validates :name, presence: true
-  validates :email, presence: true, uniqueness: true
-  validates :password, presence: true, confirmation: true
+  before_create :generate_guid
+
+  def generate_guid
+    self.guid = SecureRandom.uuid
+  end
 end
