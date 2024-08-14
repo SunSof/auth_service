@@ -10,12 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_08_12_130328) do
+ActiveRecord::Schema[7.2].define(version: 2024_08_14_191935) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "refresh_tokens", force: :cascade do |t|
+    t.string "refresh_token_hash"
+    t.string "ip", null: false
+    t.string "user_guid", null: false
+    t.datetime "expire", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "users", primary_key: "guid", id: :string, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
+
+  add_foreign_key "refresh_tokens", "users", column: "user_guid", primary_key: "guid"
 end
