@@ -15,7 +15,6 @@ class RefreshToken < ActiveRecord::Base
   end
 
   def refresh
-    update(expire: expired_time)
-    update(refresh_token_hash: generate_refresh_token)
+    update(expire: expired_time, refresh_token_hash: generate_refresh_token)
   end
 end

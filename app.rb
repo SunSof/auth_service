@@ -7,6 +7,9 @@ require "bcrypt"
 require "./models/user"
 require "./models/refresh_token"
 require "./lib/jwt_service"
+require "./jobs/send_mail_job"
+require "sidekiq"
+require_relative "config/sidekiq"
 
 autoload :JwtService, "./jwt_service"
 
@@ -24,13 +27,11 @@ get "/token" do
   if user
     ip = request.ip
     jwt_service = JwtService.new(user, ip)
-    access_token = jwt_service.access_token
-    last_refresh_token = RefreshToken.find_by(user_guid: user.guid)
-    last_refresh_token.nil? ? last_refresh_token : last_refresh_token.destroy
+    RefreshToken.find_by(user_guid: user.guid)&.destroy
     refresh_token = RefreshToken.create(user_guid: user.guid, ip: ip)
     content_type :json
     {
-      access_token: access_token,
+      access_token: jwt_service.access_token,
       refresh_token: refresh_token.refresh_token_hash
     }.to_json
   else
@@ -48,16 +49,15 @@ get "/refresh" do
   if token.expire < date_time_now
     halt 403, "Token expired"
   end
-  if params.ip != token.ip
-    SendMailWorker.perform_async(user.email)
-  end
   user = User.find_by(guid: token.user_guid)
+  if request.ip != token.ip
+    SendMailJob.perform_async(user.email)
+  end
   jwt_service = JwtService.new(user, token.ip)
-  access_token = jwt_service.access_token
   token.refresh
   content_type :json
   {
-    access_token: access_token,
+    access_token: jwt_service.access_token,
     refresh_token: token.refresh_token_hash
   }.to_json
 end

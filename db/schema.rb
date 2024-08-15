@@ -24,8 +24,10 @@ ActiveRecord::Schema[7.2].define(version: 2024_08_14_191935) do
   end
 
   create_table "users", primary_key: "guid", id: :string, force: :cascade do |t|
+    t.string "email", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
   end
 
   add_foreign_key "refresh_tokens", "users", column: "user_guid", primary_key: "guid"

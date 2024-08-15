@@ -5,15 +5,13 @@ require "dotenv"
 
 class JwtService
   def initialize(user, ip)
-    @user = user
-    @ip = ip
     @header = {
       alg: "SHA512",
       typ: "JWT"
     }
     @payload = {
-      user_id: @user.guid,
-      ip: @ip,
+      user_id: user.guid,
+      ip: ip,
       exp: Time.now.to_i + 3600
     }
   end
